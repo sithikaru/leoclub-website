@@ -1,152 +1,132 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
-import { useAdminAuth } from "@/app/hooks/useAdminAuth";
+import { useEffect, useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/app/lib/firebase";
 import {
-  getAllBoardMembers,
-  addBoardMember,
-  updateBoardMember,
+  createBoardMember,
   deleteBoardMember,
+  getAllBoardMembers,
 } from "@/app/lib/firestore";
-import { BoardMember } from "@/app/types/BoardMember";
 
 export default function AdminBoardPage() {
-  const { user, loading } = useAdminAuth(true);
-  const [members, setMembers] = useState<BoardMember[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [user, loading] = useAuthState(auth);
+  const router = useRouter();
 
-  // Form states
+  const [members, setMembers] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [editId, setEditId] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<FileList | null>(null);
 
   useEffect(() => {
-    if (!loading) {
-      fetchData();
-    }
-  }, [loading]);
+    if (!loading && !user) router.push("/admin/login");
+  }, [loading, user, router]);
 
-  async function fetchData() {
-    setLoadingData(true);
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  async function fetchMembers() {
     const data = await getAllBoardMembers();
     setMembers(data);
-    setLoadingData(false);
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleCreate(e: FormEvent) {
     e.preventDefault();
-    if (!name || !position || !photoUrl) return;
-
-    if (editId) {
-      // Update
-      await updateBoardMember(editId, { name, position, photoUrl });
-    } else {
-      // Add new
-      await addBoardMember({ name, position, photoUrl });
+    if (!photoFile || photoFile.length === 0) {
+      alert("Please select a photo file for the board member.");
+      return;
     }
-
+    const file = photoFile[0];
+    await createBoardMember({ name, position }, file);
     setName("");
     setPosition("");
-    setPhotoUrl("");
-    setEditId(null);
-    await fetchData();
-  }
-
-  function handleEdit(member: BoardMember) {
-    setEditId(member.id);
-    setName(member.name);
-    setPosition(member.position);
-    setPhotoUrl(member.photoUrl);
+    setPhotoFile(null);
+    fetchMembers();
   }
 
   async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this member?")) return;
     await deleteBoardMember(id);
-    await fetchData();
+    fetchMembers();
   }
 
-  if (loading || loadingData) return <div className="p-8">Loading...</div>;
-
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Manage Board</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Manage Board Members</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md mb-6">
-        <div>
-          <label className="block mb-1">Name</label>
-          <input
-            className="border w-full px-3 py-2"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block mb-1">Position</label>
-          <input
-            className="border w-full px-3 py-2"
-            type="text"
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block mb-1">Photo URL</label>
-          <input
-            className="border w-full px-3 py-2"
-            type="text"
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
-          {editId ? "Update" : "Add"} Member
-        </button>
-      </form>
-
-      {/* List existing members */}
-      <table className="min-w-full bg-white shadow rounded">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2 text-left">Position</th>
-            <th className="p-2 text-left">Photo</th>
-            <th className="p-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      {/* LIST */}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">Current Board Members</h2>
+        <div className="space-y-2">
           {members.map((m) => (
-            <tr key={m.id}>
-              <td className="p-2">{m.name}</td>
-              <td className="p-2">{m.position}</td>
-              <td className="p-2">
-                <img
-                  src={m.photoUrl}
-                  alt={m.name}
-                  className="w-16 h-16 object-cover rounded"
-                />
-              </td>
-              <td className="p-2 space-x-2">
+            <div key={m.id} className="border p-2 flex items-center justify-between">
+              <div>
+                <p className="font-bold">{m.name}</p>
+                <p className="text-sm text-gray-600">{m.position}</p>
+              </div>
+              <div className="space-x-2">
                 <button
+                  onClick={() => router.push(`/admin/board/${m.id}/edit`)}
                   className="bg-blue-600 text-white px-2 py-1 rounded"
-                  onClick={() => handleEdit(m)}
                 >
                   Edit
                 </button>
                 <button
-                  className="bg-red-600 text-white px-2 py-1 rounded"
                   onClick={() => handleDelete(m.id)}
+                  className="bg-red-600 text-white px-2 py-1 rounded"
                 >
                   Delete
                 </button>
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
+
+      {/* CREATE FORM */}
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Add New Member</h2>
+        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <label className="font-semibold">Name</label>
+            <input
+              type="text"
+              className="border p-2"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="font-semibold">Position</label>
+            <input
+              type="text"
+              className="border p-2"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col md:col-span-2">
+            <label className="font-semibold">Photo</label>
+            <input
+              type="file"
+              onChange={(e) => setPhotoFile(e.target.files)}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-4 py-2 rounded"
+            >
+              Create Member
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

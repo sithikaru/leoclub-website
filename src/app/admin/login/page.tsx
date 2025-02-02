@@ -7,40 +7,42 @@ import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
 
-  async function handleSubmit(e: FormEvent) {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
+    setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.replace("/admin");
+      // if success, redirect to admin dashboard
+      router.push("/admin");
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      setError(err.message);
     }
-  }
+  };
 
   return (
-    <div className="max-w-md mx-auto p-8">
+    <div className="max-w-md mx-auto mt-10 p-4 bg-white shadow">
       <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleLogin} className="flex flex-col space-y-4">
         <div>
-          <label className="block mb-1">Email</label>
+          <label className="block font-semibold">Email</label>
           <input
             type="email"
-            className="border w-full px-3 py-2"
+            className="w-full border p-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
         <div>
-          <label className="block mb-1">Password</label>
+          <label className="block font-semibold">Password</label>
           <input
             type="password"
-            className="border w-full px-3 py-2"
+            className="w-full border p-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -49,7 +51,7 @@ export default function AdminLoginPage() {
         {error && <p className="text-red-600">{error}</p>}
         <button
           type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
         >
           Login
         </button>

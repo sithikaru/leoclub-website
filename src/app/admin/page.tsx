@@ -1,42 +1,37 @@
 "use client";
 
-import { signOut } from "firebase/auth";
-import { auth } from "../lib/firebase";
-import { useAdminAuth } from "../hooks/useAdminAuth";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/app/lib/firebase";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function AdminDashboard() {
-  const { user, loading } = useAdminAuth(true);
+export default function AdminHomePage() {
+  const [user, loading] = useAuthState(auth);
+  const router = useRouter();
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return <div className="p-4">Checking auth...</div>;
 
-  async function handleLogout() {
-    await signOut(auth);
+  if (!user) {
+    router.push("/admin/login");
+    return null;
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      <p>Welcome, {user?.email}!</p>
-      <div className="mt-4 space-x-4">
-        <Link
-          href="/admin/board"
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
-          Manage Board
-        </Link>
+      <div className="space-x-4">
         <Link
           href="/admin/projects"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="inline-block bg-green-600 text-white px-4 py-2 rounded"
         >
           Manage Projects
         </Link>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded"
+        <Link
+          href="/admin/board"
+          className="inline-block bg-green-600 text-white px-4 py-2 rounded"
         >
-          Logout
-        </button>
+          Manage Board Members
+        </Link>
       </div>
     </div>
   );

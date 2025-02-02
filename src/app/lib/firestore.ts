@@ -1,89 +1,191 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  collection,
   doc,
+  collection,
   getDocs,
   getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
+  Timestamp,
   query,
   where,
+  DocumentData,
   orderBy,
 } from "firebase/firestore";
-import { db } from "./firebase";
-import { Project } from "@/types/Project";
-import { BoardMember } from "@/types/BoardMember";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "./firebase";
 
-// ---------- PROJECTS ---------- //
+// ========== PROJECTS ==========
 
-// Add a new project
-export async function addProject(data: Omit<Project, "id">) {
-  const docRef = await addDoc(collection(db, "projects"), data);
+// Create a new project (with multiple images).
+// `files` is an array of File objects from the form.
+// We'll upload each file to Storage and store the URLs in Firestore.
+export async function createProject(data: any, files: File[]): Promise<string> {
+  // 1. Upload each file to Storage
+  const imageUrls: string[] = [];
+  for (const file of files) {
+    const url = await uploadFile(file, "projects");
+    if (url) imageUrls.push(url);
+  }
+
+  // 2. Add doc to Firestore
+  const docRef = await addDoc(collection(db, "projects"), {
+    title: data.title,
+    description: data.description,
+    location: data.location,
+    startDate: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
+    endDate: data.endDate ? Timestamp.fromDate(new Date(data.endDate)) : null,
+    status: data.status, // "past" or "upcoming"
+    videoUrls: data.videoUrls ? data.videoUrls.split(",").map((s: string) => s.trim()) : [],
+    images: imageUrls,
+    createdAt: Timestamp.now(),
+  });
+
   return docRef.id;
 }
 
-// Get all projects
-export async function getAllProjects(): Promise<Project[]> {
-  const snapshot = await getDocs(collection(db, "projects"));
-  return snapshot.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-  })) as Project[];
+// Update an existing project (can also handle new files).
+export async function updateProject(
+  id: string,
+  data: any,
+  newFiles: File[]
+): Promise<void> {
+  const docRef = doc(db, "projects", id);
+  const snapshot = await getDoc(docRef);
+
+  if (!snapshot.exists()) throw new Error("Project not found.");
+
+  // 1. If new files are provided, upload them and append to the existing images
+  let existingData = snapshot.data();
+  const existingImages = existingData.images || [];
+  const newImageUrls: string[] = [];
+
+  for (const file of newFiles) {
+    const url = await uploadFile(file, "projects");
+    if (url) newImageUrls.push(url);
+  }
+
+  const updatedImages = [...existingImages, ...newImageUrls];
+
+  // 2. Build updated fields
+  const updatedData = {
+    title: data.title,
+    description: data.description,
+    location: data.location,
+    startDate: data.startDate ? Timestamp.fromDate(new Date(data.startDate)) : null,
+    endDate: data.endDate ? Timestamp.fromDate(new Date(data.endDate)) : null,
+    status: data.status,
+    videoUrls: data.videoUrls ? data.videoUrls.split(",").map((s: string) => s.trim()) : [],
+    images: updatedImages,
+    updatedAt: Timestamp.now(),
+  };
+
+  await updateDoc(docRef, updatedData);
 }
 
-// Get a single project by ID
-export async function getProject(id: string): Promise<Project | null> {
+// Get a single project
+export async function getProjectById(id: string): Promise<any> {
   const docRef = doc(db, "projects", id);
   const snapshot = await getDoc(docRef);
   if (!snapshot.exists()) return null;
-  return {
-    id: snapshot.id,
-    ...snapshot.data(),
-  } as Project;
+  return { id: snapshot.id, ...snapshot.data() };
 }
 
-// Update project
-export async function updateProject(id: string, data: Partial<Project>) {
-  const docRef = doc(db, "projects", id);
-  await updateDoc(docRef, data);
-}
-
-// Delete project
-export async function deleteProject(id: string) {
+// Delete a project
+export async function deleteProject(id: string): Promise<void> {
   const docRef = doc(db, "projects", id);
   await deleteDoc(docRef);
 }
 
-// ---------- BOARD MEMBERS ---------- //
+// List projects (optionally filter by status)
+export async function getProjectsByStatus(status?: string): Promise<DocumentData[]> {
+  let q;
+  if (status) {
+    q = query(collection(db, "projects"), where("status", "==", status), orderBy("startDate", "asc"));
+  } else {
+    q = query(collection(db, "projects"), orderBy("startDate", "asc"));
+  }
 
-// Add a new board member
-export async function addBoardMember(data: Omit<BoardMember, "id">) {
-  const docRef = await addDoc(collection(db, "boardMembers"), data);
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// ========== BOARD MEMBERS ==========
+
+// Create a board member (single photo)
+export async function createBoardMember(data: any, file?: File): Promise<string> {
+  let photoUrl = "";
+  if (file) {
+    const url = await uploadFile(file, "board");
+    if (url) photoUrl = url;
+  }
+
+  const docRef = await addDoc(collection(db, "boardMembers"), {
+    name: data.name,
+    position: data.position,
+    photoUrl,
+    createdAt: Timestamp.now(),
+  });
+
   return docRef.id;
 }
 
-// Get all board members
-export async function getAllBoardMembers(): Promise<BoardMember[]> {
-  const snapshot = await getDocs(
-    query(collection(db, "boardMembers"), orderBy("position", "asc"))
-  );
-  return snapshot.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-  })) as BoardMember[];
-}
-
-// Update board member
+// Update a board member
 export async function updateBoardMember(
   id: string,
-  data: Partial<BoardMember>
-) {
+  data: any,
+  newFile?: File
+): Promise<void> {
   const docRef = doc(db, "boardMembers", id);
-  await updateDoc(docRef, data);
+  const snapshot = await getDoc(docRef);
+
+  if (!snapshot.exists()) throw new Error("Member not found.");
+
+  let updatedPhoto = snapshot.data().photoUrl || "";
+  if (newFile) {
+    const url = await uploadFile(newFile, "board");
+    if (url) updatedPhoto = url;
+  }
+
+  await updateDoc(docRef, {
+    name: data.name,
+    position: data.position,
+    photoUrl: updatedPhoto,
+    updatedAt: Timestamp.now(),
+  });
 }
 
-// Delete board member
-export async function deleteBoardMember(id: string) {
+// Delete a board member
+export async function deleteBoardMember(id: string): Promise<void> {
   const docRef = doc(db, "boardMembers", id);
   await deleteDoc(docRef);
+}
+
+// Get a single board member
+export async function getBoardMemberById(id: string) {
+  const docRef = doc(db, "boardMembers", id);
+  const snapshot = await getDoc(docRef);
+  if (!snapshot.exists()) return null;
+  return { id: snapshot.id, ...snapshot.data() };
+}
+
+// List all board members
+export async function getAllBoardMembers() {
+  const snapshot = await getDocs(collection(db, "boardMembers"));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// ========== FILE UPLOAD UTILITY ==========
+
+async function uploadFile(file: File, folder: string): Promise<string | null> {
+  try {
+    const storageRef = ref(storage, `${folder}/${Date.now()}-${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(snapshot.ref);
+    return downloadUrl;
+  } catch (err) {
+    console.error("File upload failed", err);
+    return null;
+  }
 }
