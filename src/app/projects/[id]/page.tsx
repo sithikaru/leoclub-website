@@ -1,68 +1,51 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+import { getProjectById } from "@/app/lib/firestore";
+import { notFound } from "next/navigation";
 
-import { useSearchParams } from "next/navigation"; // or just use the "params" prop from layout if you prefer
-import { useEffect, useState } from "react";
-import { getProject } from "@/app/lib/firestore";
-import { Project } from "@/app/types/Project";
+export const revalidate = 0; // Force dynamic fetch if desired
 
-export default function ProjectDetails({ params }: any) {
-  const projectId = params.id;
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
+interface ProjectPageProps {
+  params: { id: string };
+}
 
-  useEffect(() => {
-    async function fetchData() {
-      const data = await getProject(projectId);
-      setProject(data);
-      setLoading(false);
-    }
-    fetchData();
-  }, [projectId]);
+// Server Component that fetches Firestore doc by ID
+export default async function ProjectDetailsPage({ params }: ProjectPageProps) {
+  const project = await getProjectById(params.id);
 
-  if (loading) return <div className="p-8">Loading project...</div>;
-  if (!project) return <div className="p-8">Project not found.</div>;
+  if (!project) {
+    return notFound();
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-3xl font-bold">{project.title}</h1>
-      <p className="text-sm text-gray-600">{project.status.toUpperCase()} Project</p>
-
-      {project.location && (
-        <p className="mt-2">Location: {project.location}</p>
-      )}
-      {project.time && (
-        <p className="mt-1">
-          Time: {new Date(project.time).toLocaleString()}
-        </p>
-      )}
-      <p className="mt-4">{project.description}</p>
+    <div className="max-w-6xl mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
+      <p className="text-sm text-gray-600 mb-2">
+        {project.location} |{" "}
+        {project.startDate?.seconds
+          ? new Date(project.startDate.seconds * 1000).toDateString()
+          : ""}
+      </p>
+      <p className="text-gray-700 mb-4">{project.description}</p>
 
       {/* Images */}
       {project.images && project.images.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {project.images.map((url, idx) => (
-            <img
-              key={idx}
-              src={url}
-              alt={`Project Image ${idx}`}
-              className="w-full h-auto rounded"
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          {project.images.map((url: string, i: number) => (
+            <img key={i} src={url} alt="Project image" className="w-full" />
           ))}
         </div>
       )}
 
       {/* Videos */}
       {project.videoUrls && project.videoUrls.length > 0 && (
-        <div className="mt-4 space-y-4">
-          {project.videoUrls.map((vid, idx) => (
-            <div key={idx} className="aspect-w-16 aspect-h-9">
+        <div className="space-y-4">
+          {project.videoUrls.map((vidUrl: string, i: number) => (
+            <div key={i} className="aspect-w-16 aspect-h-9">
               <iframe
-                src={vid}
-                title={`Project Video ${idx}`}
+                src={vidUrl}
                 allowFullScreen
                 className="w-full h-full"
-              ></iframe>
+                title={`Video ${i}`}
+              />
             </div>
           ))}
         </div>
