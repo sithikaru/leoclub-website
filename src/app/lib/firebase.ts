@@ -1,10 +1,7 @@
-// lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// If you plan on using storage for images, also import { getStorage } from "firebase/storage";
-
-
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,9 +12,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only once (Next.js may hot-reload and try to re-init multiple times)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-// export const storage = getStorage(app);
+export const storage = getStorage(app);

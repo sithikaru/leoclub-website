@@ -1,14 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
-import { useEffect, useState } from "react";
-import Calendar from "react-calendar";
-import 'react-calendar/dist/Calendar.css';
-import { getAllProjects } from "../../lib/firestore";
-import Link from "next/link";
+"use client";
 
-function UpcomingProjects() {
-  const [upcoming, setUpcoming] = useState<any[]>([]);
+import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import { useEffect, useState } from "react";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { getAllProjects } from "@/app/lib/firestore";
+import { Project } from "@/app/types/Project";
+
+import { enUS } from "date-fns/locale/en-US";
+
+const locales = {
+  "en-US": enUS,
+};
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
+export default function UpcomingProjectsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [events, setEvents] = useState<any[]>([]); // React Big Calendar events
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
@@ -16,76 +35,125 @@ function UpcomingProjects() {
 
   async function fetchData() {
     const all = await getAllProjects();
-    const filtered = all.filter((p) => p.status === "upcoming");
-    setUpcoming(filtered);
-  }
+    const upcoming = all.filter((p) => p.status === "upcoming");
+    setProjects(upcoming);
 
-  // You could highlight days that have events:
-  function tileContent({ date, view }: { date: Date; view: string }) {
-    if (view === "month") {
-      // check if any project starts on this date (assuming project.startDate is a real JS Date or converted from Timestamp)
-      const dayHasEvent = upcoming.find((proj) => {
-        const projDate = new Date(proj.startDate.seconds * 1000); // if using Firestore Timestamp
-        return (
-          projDate.getDate() === date.getDate() &&
-          projDate.getMonth() === date.getMonth() &&
-          projDate.getFullYear() === date.getFullYear()
-        );
-      });
-      if (dayHasEvent) {
-        return <div className="bg-green-600 text-white rounded-full px-2">Event</div>;
+    // Convert to RBC event objects
+    const rbcEvents = upcoming.map((proj) => {
+      // If you store time as a string, parse it here
+      // If you store as a timestamp, convert it
+      let eventDate = new Date();
+      if (proj.time) {
+        eventDate = new Date(proj.time); 
       }
-    }
-    return null;
+      return {
+        title: proj.title,
+        start: eventDate,
+        end: eventDate, // if single-day
+        resource: proj, // keep a reference to the full project
+      };
+    });
+    setEvents(rbcEvents);
+    setFilteredProjects(upcoming);
+    setLoading(false);
   }
 
-  function onDateChange(date: Date) {
-    setSelectedDate(date);
+  function handleSelectSlot(slotInfo: any) {
+    // If user clicks an empty slot, we can filter by that day
+    if (!slotInfo || !slotInfo.start) return;
+    const clickedDate = slotInfo.start as Date;
+    setSelectedDate(clickedDate);
+    filterProjectsByDate(clickedDate);
   }
 
-  // Filter to show events happening on the selected date
-  const eventsOnSelectedDate = upcoming.filter((proj) => {
-    const projDate = new Date(proj.startDate.seconds * 1000);
-    return selectedDate &&
-      projDate.toDateString() === selectedDate.toDateString();
-  });
+  function handleSelectEvent(e: any) {
+    if (!e.resource) return;
+    
+    // Set the selected date from the event
+    setSelectedDate(e.start);
+    
+    // Filter to show only this specific project
+    setFilteredProjects([e.resource]);
+  }
+
+  function filterProjectsByDate(date: Date) {
+    const filtered = projects.filter((proj) => {
+      if (!proj.time) return false;
+      const projDate = new Date(proj.time);
+      return (
+        projDate.toDateString() === date.toDateString()
+      );
+    });
+    setFilteredProjects(filtered);
+  }
+
+  function showAll() {
+    setSelectedDate(null);
+    setFilteredProjects(projects);
+  }
+
+  if (loading) {
+    return <div className="p-8">Loading upcoming projects...</div>;
+  }
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Upcoming Projects</h1>
-      <div className="flex flex-col md:flex-row gap-8">
+    <div className="max-w-6xl mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">Upcoming Projects</h1>
+
+      {/* Big Calendar */}
+      <div className="bg-white p-4 rounded shadow mb-6">
         <Calendar
-          onChange={onDateChange}
-          value={selectedDate}
-          tileContent={tileContent}
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 500 }}
+          selectable
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
         />
-        <div className="flex-1">
-          {selectedDate ? (
-            <>
-              <h2 className="text-xl font-semibold mb-2">
-                Events on {selectedDate.toDateString()}
-              </h2>
-              {eventsOnSelectedDate.length > 0 ? (
-                eventsOnSelectedDate.map((proj) => (
-                  <div key={proj.id} className="mb-4 bg-white p-4 shadow">
-                    <h3 className="text-lg font-bold">{proj.title}</h3>
-                    <p>{proj.description}</p>
-                    <Link href={`/projects/${proj.id}`}>
-                      <a className="text-blue-600 underline">View Details</a>
-                    </Link>
-                  </div>
-                ))
-              ) : (
-                <p>No events on this date.</p>
-              )}
-            </>
-          ) : (
-            <p>Select a date on the calendar to see events.</p>
-          )}
-        </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        {selectedDate ? (
+          <p className="font-semibold">
+            Showing events on {selectedDate.toDateString()}
+          </p>
+        ) : (
+          <p className="font-semibold">Showing all upcoming events</p>
+        )}
+        <button
+          onClick={showAll}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+        >
+          Show All
+        </button>
+      </div>
+
+      {/* List of Projects */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {filteredProjects.map((proj) => (
+          <div key={proj.id} className="bg-white p-4 shadow rounded">
+            {proj.images && proj.images[0] && (
+              <img
+                src={proj.images[0]}
+                alt={proj.title}
+                className="w-full h-40 object-cover rounded mb-2"
+              />
+            )}
+            <h2 className="text-xl font-bold">{proj.title}</h2>
+            {proj.location && (
+              <p className="text-sm text-gray-600">Location: {proj.location}</p>
+            )}
+            {proj.time && (
+              <p className="text-sm text-gray-600">
+                Time: {new Date(proj.time).toLocaleString()}
+              </p>
+            )}
+            <p className="text-sm mt-2">{proj.description}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
-
-export default UpcomingProjects;

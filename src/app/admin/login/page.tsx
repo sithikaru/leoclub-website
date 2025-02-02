@@ -1,54 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/admin/login/page.tsx
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // On success, redirect to admin panel
-      router.push("/admin");
+      router.replace("/admin");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Login failed");
     }
-  };
+  }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Admin Login</h1>
-      <form onSubmit={handleLogin} className="mt-4">
+    <div className="max-w-md mx-auto p-8">
+      <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label>Email</label>
+          <label className="block mb-1">Email</label>
           <input
-            className="border p-1"
             type="email"
+            className="border w-full px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@iit.leo.org"
+            required
           />
         </div>
-        <div className="mt-2">
-          <label>Password</label>
+        <div>
+          <label className="block mb-1">Password</label>
           <input
-            className="border p-1"
             type="password"
+            className="border w-full px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-        <button className="bg-green-600 text-white px-4 py-2 mt-4" type="submit">
+        {error && <p className="text-red-600">{error}</p>}
+        <button
+          type="submit"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+        >
           Login
         </button>
       </form>

@@ -1,44 +1,65 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import { Metadata } from "next";
 import Link from "next/link";
-import { ReactNode } from "react";
-
-interface LayoutProps {
-  children: ReactNode;
-}
 
 export const metadata: Metadata = {
-  title: "IIT Leo",
-  description: "The official website of the Leo Club of IIT",
+  title: "Leo Club of IIT",
+  description: "Official website for the Leo Club of IIT",
 };
 
-
-export default function Layout({ children }: LayoutProps) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        <div className="flex flex-col min-h-screen">
-      <header className="bg-white shadow p-4">
-        <nav className="container mx-auto flex gap-4">
-          <Link href="/">Home</Link>
-          <Link href="/board">Board</Link>
-          <Link href="/projects/past">Past Projects</Link>
-          <Link href="/projects/upcoming">Upcoming Projects</Link>
-          <Link href="/achievements">Achievements</Link>
-        </nav>
-      </header>
+      <body className="font-sans bg-gray-50 text-gray-800">
+        <header className="bg-white border-b sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <img
+                src="/logo.png"
+                alt="Leo Club Logo"
+                className="h-8 w-auto"
+              />
+              <span className="font-bold text-lg">Leo Club of IIT</span>
+            </div>
+            <nav className="space-x-4 hidden md:block">
+              <Link href="/">Home</Link>
+              <Link href="/board">Board</Link>
+              <Link href="/projects/past">Past</Link>
+              <Link href="/projects/upcoming">Upcoming</Link>
+              <Link href="/achievements">Achievements</Link>
+            </nav>
+          </div>
+        </header>
 
-      <main className="flex-grow container mx-auto p-4">
-        {children}
-      </main>
+        <main className="min-h-screen">{children}</main>
 
-      <footer className="bg-gray-200 p-4">
-        <div className="container mx-auto">
-          {/* Social media icons, feeds, etc. */}
-          <p>© 2025 Leo Club of IIT</p>
-        </div>
-      </footer>
-    </div>
+        <footer className="bg-white border-t">
+          <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              © {new Date().getFullYear()} Leo Club of IIT. All rights reserved.
+            </p>
+            <div className="space-x-4">
+              <a
+                href="https://instagram.com/YourInstagramHandle"
+                className="text-gray-600 hover:text-green-700 transition"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Instagram
+              </a>
+              <a
+                href="mailto:info@leoclubiit.com"
+                className="text-gray-600 hover:text-green-700 transition"
+              >
+                Email
+              </a>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

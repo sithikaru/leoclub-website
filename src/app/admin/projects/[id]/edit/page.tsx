@@ -1,28 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
 import { useAdminAuth } from "@/app/hooks/useAdminAuth";
-import {
-  getAllProjects,
-  addProject,
-  deleteProject,
-} from "@/app/lib/firestore";
+import { getProject, updateProject } from "@/app/lib/firestore";
 import { Project } from "@/app/types/Project";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function AdminProjectsPage() {
+export default function EditProjectPage({ params }: any) {
   const { user, loading } = useAdminAuth(true);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const router = useRouter();
+  const [project, setProject] = useState<Project | null>(null);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Form
+  // Form states
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<"past" | "upcoming">("upcoming");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
-  const [time, setTime] = useState(""); // or a date-time pick
-  const [images, setImages] = useState<string>("");
-  const [videos, setVideos] = useState<string>("");
+  const [time, setTime] = useState("");
+  const [images, setImages] = useState("");
+  const [videos, setVideos] = useState("");
 
   useEffect(() => {
     if (!loading) {
@@ -31,59 +29,61 @@ export default function AdminProjectsPage() {
   }, [loading]);
 
   async function fetchData() {
-    setLoadingData(true);
-    const data = await getAllProjects();
-    setProjects(data);
+    if (!params.id) return;
+    const data = await getProject(params.id);
+    if (data) {
+      setProject(data);
+      setTitle(data.title || "");
+      setDescription(data.description || "");
+      setLocation(data.location || "");
+      setTime(data.time || "");
+      setStatus(data.status);
+      setImages(data.images?.join(",") || "");
+      setVideos(data.videoUrls?.join(",") || "");
+    }
     setLoadingData(false);
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // Split images by commas
-    const imageUrls = images
+    if (!project) return;
+
+    const imageArr = images
       .split(",")
       .map((s) => s.trim())
       .filter((x) => x);
-    const videoUrls = videos
+    const videoArr = videos
       .split(",")
       .map((s) => s.trim())
       .filter((x) => x);
 
-    const newProject: Omit<Project, "id"> = {
+    const updatedData: Partial<Project> = {
       title,
       description,
       location,
       time,
       status,
-      images: imageUrls,
-      videoUrls,
-      createdAt: new Date(),
+      images: imageArr,
+      videoUrls: videoArr,
+      updatedAt: new Date(),
     };
-    await addProject(newProject);
 
-    // Reset form
-    setTitle("");
-    setDescription("");
-    setLocation("");
-    setTime("");
-    setStatus("upcoming");
-    setImages("");
-    setVideos("");
-
-    await fetchData();
+    await updateProject(project.id, updatedData);
+    router.push("/admin/projects");
   }
 
-  async function handleDelete(id: string) {
-    await deleteProject(id);
-    await fetchData();
+  if (loading || loadingData) {
+    return <div className="p-8">Loading...</div>;
   }
 
-  if (loading || loadingData) return <div className="p-8">Loading...</div>;
+  if (!project) {
+    return <div className="p-8">Project not found</div>;
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Manage Projects</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mb-6">
+      <h1 className="text-2xl font-bold mb-4">Edit Project</h1>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
         <div>
           <label className="block mb-1">Title</label>
           <input
@@ -133,9 +133,7 @@ export default function AdminProjectsPage() {
           />
         </div>
         <div>
-          <label className="block mb-1">
-            Images (comma separated URLs)
-          </label>
+          <label className="block mb-1">Images (comma separated URLs)</label>
           <input
             className="border w-full px-3 py-2"
             type="text"
@@ -144,9 +142,7 @@ export default function AdminProjectsPage() {
           />
         </div>
         <div>
-          <label className="block mb-1">
-            Videos (comma separated embed URLs)
-          </label>
+          <label className="block mb-1">Videos (comma separated URLs)</label>
           <input
             className="border w-full px-3 py-2"
             type="text"
@@ -155,42 +151,9 @@ export default function AdminProjectsPage() {
           />
         </div>
         <button className="bg-green-600 text-white px-4 py-2 rounded" type="submit">
-          Add Project
+          Update Project
         </button>
       </form>
-
-      {/* Existing Projects */}
-      <table className="min-w-full bg-white shadow rounded">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="p-2 text-left">Title</th>
-            <th className="p-2 text-left">Status</th>
-            <th className="p-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {projects.map((p) => (
-            <tr key={p.id}>
-              <td className="p-2">{p.title}</td>
-              <td className="p-2 capitalize">{p.status}</td>
-              <td className="p-2 space-x-2">
-                <Link
-                  href={`/admin/projects/${p.id}/edit`}
-                  className="bg-blue-600 text-white px-2 py-1 rounded"
-                >
-                  Edit
-                </Link>
-                <button
-                  className="bg-red-600 text-white px-2 py-1 rounded"
-                  onClick={() => handleDelete(p.id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

@@ -1,103 +1,119 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// pages/index.tsx
-
 "use client";
-import type { NextPage } from "next";
-import { useEffect, useState } from "react";
-import { getAllProjects } from "../app/lib/firestore"; // example import
-import Link from "next/link";
 
-const Home: NextPage = () => {
-  const [featuredProject, setFeaturedProject] = useState<any>(null);
-  const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getAllProjects } from "@/app/lib/firestore";
+import { Project } from "@/app/types/Project";
+
+export default function HomePage() {
+  const [upcoming, setUpcoming] = useState<Project[]>([]);
+  const [past, setPast] = useState<Project[]>([]);
 
   useEffect(() => {
-    fetchProjects();
+    fetchData();
   }, []);
 
-  async function fetchProjects() {
-    // This is a simple example that fetches all projects,
-    // then filters in the client. You might prefer a Firestore query with a "where" clause.
-    const all = await getAllProjects();
-    const upcoming = all.filter((p) => p.status === "upcoming");
-
-    // Pick one as "featured"
-    if (upcoming.length > 0) {
-      setFeaturedProject(upcoming[0]); // or some logic for "most recent"
-    }
-    setUpcomingProjects(upcoming.slice(0, 3)); // display first 3 upcoming
+  async function fetchData() {
+    const allProjects = await getAllProjects();
+    const upcomingProjects = allProjects.filter(
+      (p) => p.status === "upcoming"
+    );
+    const pastProjects = allProjects.filter((p) => p.status === "past");
+    // Just show a few
+    setUpcoming(upcomingProjects.slice(0, 3));
+    setPast(pastProjects.slice(0, 3));
   }
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="bg-green-600 text-white p-8 text-center">
-        <h1 className="text-4xl font-bold">Welcome to the Leo Club of IIT</h1>
-        <p className="mt-2 text-lg">
-          Empowering youth, building community, and making a difference.
-        </p>
+    <>
+      {/* Hero */}
+      <section className="h-[60vh] bg-gradient-to-r from-green-700 to-green-400 text-white flex items-center justify-center">
+        <div className="text-center px-4">
+          <img
+            src="/logo.png"
+            alt="Leo Club Logo"
+            className="mx-auto mb-4 h-24 w-auto"
+          />
+          <h1 className="text-4xl font-bold mb-2">Leo Club of IIT</h1>
+          <p>Empowering youth. Building communities.</p>
+        </div>
       </section>
 
-      {/* Club Mission / Intro */}
-      <section className="p-8 bg-gray-100">
-        <h2 className="text-2xl font-semibold">Our Mission</h2>
-        <p className="mt-2">
-          We strive to serve our community through impactful projects and leadership development.
+      {/* Mission */}
+      <section className="max-w-6xl mx-auto p-8 text-center">
+        <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
+        <p className="text-gray-600">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique
+          quas dicta libero porro maxime suscipit, tempore saepe mollitia
+          molestias consectetur.
         </p>
       </section>
-
-      {/* Featured Project */}
-      {featuredProject && (
-        <section className="p-8">
-          <h2 className="text-2xl font-semibold">Featured Upcoming Project</h2>
-          <div className="mt-4 bg-white shadow p-4">
-            <h3 className="text-xl font-bold">{featuredProject.title}</h3>
-            <p>{featuredProject.description}</p>
-            <Link href={`/projects/${featuredProject.id}`} className="text-blue-600 underline mt-2 inline-block">
-                Read More
-            </Link>
-          </div>
-        </section>
-      )}
 
       {/* Upcoming Projects Preview */}
-      <section className="p-8">
-        <h2 className="text-2xl font-semibold">Upcoming Projects</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {upcomingProjects.map((proj) => (
-            <div key={proj.id} className="bg-white shadow p-4">
-              <h3 className="text-lg font-bold">{proj.title}</h3>
-              <p>{proj.description}</p>
-              <Link href={`/projects/${proj.id}`} className="text-blue-600 underline">
-                View Details
-              </Link>
+      <section className="max-w-6xl mx-auto p-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Upcoming Projects</h2>
+          <Link href="/projects/upcoming" className="text-green-700 underline">
+            View All
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {upcoming.map((proj) => (
+            <div key={proj.id} className="bg-white shadow p-4 rounded">
+              {proj.images && proj.images[0] && (
+                <img
+                  src={proj.images[0]}
+                  alt={proj.title}
+                  className="w-full h-40 object-cover rounded mb-2"
+                />
+              )}
+              <h3 className="font-bold text-lg">{proj.title}</h3>
+              <p className="text-sm text-gray-600">{proj.description}</p>
             </div>
           ))}
         </div>
-        <div className="mt-4">
-          <Link href="/projects/upcoming" className="text-blue-600 underline">
-              See All Upcoming Projects
+      </section>
+
+      {/* Past Projects Preview */}
+      <section className="max-w-6xl mx-auto p-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Past Projects</h2>
+          <Link href="/projects/past" className="text-green-700 underline">
+            View All
           </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {past.map((proj) => (
+            <div key={proj.id} className="bg-white shadow p-4 rounded">
+              {proj.images && proj.images[0] && (
+                <img
+                  src={proj.images[0]}
+                  alt={proj.title}
+                  className="w-full h-40 object-cover rounded mb-2"
+                />
+              )}
+              <h3 className="font-bold text-lg">{proj.title}</h3>
+              <p className="text-sm text-gray-600">{proj.description}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Contact/Join Us */}
-      <section className="p-8 bg-gray-100">
-        <h2 className="text-2xl font-semibold">Join Us</h2>
-        <p className="mt-2">
-          Interested in becoming a member? Fill out our registration form:
+      {/* Join Us */}
+      <section className="max-w-6xl mx-auto p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Join Us</h2>
+        <p className="text-gray-600 mb-4">
+          Interested in becoming a member? Apply now!
         </p>
         <a
           href="https://docs.google.com/forms/d/..."
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded"
+          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
         >
-          Register Now
+          Apply
         </a>
       </section>
-    </div>
+    </>
   );
-};
-
-export default Home;
+}
