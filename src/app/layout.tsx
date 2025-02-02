@@ -1,6 +1,8 @@
+/* eslint-disable react/jsx-no-undef */
 import "./globals.css";
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Leo Club of IIT",
@@ -15,51 +17,43 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans bg-gray-50 text-gray-800">
-        <header className="bg-white border-b sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <img
-                src="/logo.png"
-                alt="Leo Club Logo"
-                className="h-8 w-auto"
-              />
-              <span className="font-bold text-lg">Leo Club of IIT</span>
-            </div>
-            <nav className="space-x-4 hidden md:block">
-              <Link href="/">Home</Link>
-              <Link href="/board">Board</Link>
-              <Link href="/projects/past">Past</Link>
-              <Link href="/projects/upcoming">Upcoming</Link>
-              <Link href="/achievements">Achievements</Link>
-            </nav>
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-sm bg-black/70 border-b border-neutral-800">
+        {/* Logo / Title */}
+        <Link href="/">
+          <div className="flex items-center space-x-2 cursor-pointer">
+        <Image src="/logo.png" alt="Leo Club Logo" width={40} height={40} />
+        <span className="text-xl font-bold tracking-widest uppercase text-white">Leo Club of IIT</span>
           </div>
-        </header>
+        </Link>
+
+        <nav className="flex space-x-8 text-xl font-semibold text-white items-center">
+          <Link href="/" >
+        Home
+          </Link>
+          <Link href="/projects/upcoming">
+        Upcoming Projects
+          </Link>
+          <Link href="/projects/past" >
+        Past Projects
+          </Link>
+          <Link href="/board" >
+        Our Board
+          </Link>
+          <Link href="/contact" >
+        Contact Us
+          </Link>
+        </nav>
+      </header>
 
         <main className="min-h-screen">{children}</main>
 
-        <footer className="bg-white border-t">
-          <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} Leo Club of IIT. All rights reserved.
-            </p>
-            <div className="space-x-4">
-              <a
-                href="https://instagram.com/YourInstagramHandle"
-                className="text-gray-600 hover:text-green-700 transition"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Instagram
-              </a>
-              <a
-                href="mailto:info@leoclubiit.com"
-                className="text-gray-600 hover:text-green-700 transition"
-              >
-                Email
-              </a>
-            </div>
-          </div>
-        </footer>
+        
+
+        <footer className="py-8 border-t border-neutral-800 bg-black text-center text-gray-400">
+        <p className="text-sm">
+          &copy; {new Date().getFullYear()} Leo Club of IIT. All rights reserved.
+        </p>
+      </footer>
       </body>
     </html>
   );

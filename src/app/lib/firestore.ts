@@ -189,3 +189,29 @@ async function uploadFile(file: File, folder: string): Promise<string | null> {
     return null;
   }
 }
+
+// ========== STATISTICS ==========
+
+export async function getStats(): Promise<any> {
+  // Fetch all documents from "projects" and "boardMembers"
+  const projectsSnapshot = await getDocs(collection(db, "projects"));
+  const boardSnapshot = await getDocs(collection(db, "boardMembers"));
+
+  // Extract the raw data from the snapshots
+  const projects = projectsSnapshot.docs.map((doc) => doc.data());
+  const boardMembers = boardSnapshot.docs.map((doc) => doc.data());
+
+  // Calculate how many projects are "past" vs. "upcoming"
+  const completedProjects = projects.filter((project: any) => project.status === "past").length;
+  const plannedProjects = projects.filter((project: any) => project.status === "upcoming").length;
+
+  // Calculate the number of active board members (as an example)
+  const activeMembers = boardMembers.length;
+
+  // Return the stats object
+  return {
+    completedProjects,  // e.g. 5
+    plannedProjects,    // e.g. 3
+    activeMembers,      // e.g. 10
+  };
+}

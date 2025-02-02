@@ -12,3 +12,53 @@
     animation: fadeIn 0.5s ease forwards;
   }
   
+  /* ====== Custom Styling for React Big Calendar ====== */
+
+/* Highlight the selected date */
+.rbc-selected-cell {
+  background-color: rgba(0, 255, 150, 0.3) !important;
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+/* Custom styling for event fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rbc-event {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Make sure the calendar is fully visible in dark mode */
+.rbc-calendar {
+  background: #121212 !important;
+  color: white !important;
+}
+
+/* Custom border for week/day slots */
+.rbc-day-bg {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.rbc-day-bg:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Smooth selection transition */
+@keyframes pulse {
+  0% {
+    background-color: rgba(0, 255, 150, 0.3);
+  }
+  100% {
+    background-color: rgba(0, 255, 150, 0.6);
+  }
+}

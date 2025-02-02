@@ -2,24 +2,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion"; // Import animation
 import { Calendar, dateFnsLocalizer, Event } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { getProjectsByStatus } from "@/app/lib/firestore";
-import Link from "next/link";
 
-const locales = {
-  "en-US": enUS,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
+// Localization setup
+const locales = { "en-US": enUS };
+const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
 export default function UpcomingProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -36,106 +28,117 @@ export default function UpcomingProjectsPage() {
     })();
   }, []);
 
-  if (loading) return <div className="p-4">Loading upcoming projects...</div>;
-
   // Convert projects to Calendar Events
-  const events: Event[] = projects
-    .filter((p) => p.startDate?.seconds)
-    .map((p) => {
-      const start = new Date(p.startDate.seconds * 1000);
-      const end = p.endDate?.seconds
-        ? new Date(p.endDate.seconds * 1000)
-        : start; // if no endDate, same day
-      return {
-        title: p.title,
-        start,
-        end,
-        allDay: true,
-        resource: p.id, // store doc id in resource
-      };
-    });
+  const events: Event[] = projects.map((p) => ({
+    title: p.title,
+    start: p.startDate?.seconds ? new Date(p.startDate.seconds * 1000) : new Date(),
+    end: p.endDate?.seconds ? new Date(p.endDate.seconds * 1000) : new Date(),
+    allDay: true,
+    resource: p.id,
+  }));
 
-  const handleSelectEvent = (e: Event) => {
-    // user clicked an event => filter the list by that event or show details
-    const projId = e.resource;
-    const foundProj = projects.find((proj) => proj.id === projId);
-    if (foundProj) {
-      setFilteredProjects([foundProj]);
-      setSelectedDate(null);
-    }
-  };
-
+  // Handle Date Selection (Add Animation)
   const handleSelectSlot = ({ start }: { start: Date }) => {
-    // user clicked on a date in the calendar => filter projects by that date
     setSelectedDate(start);
-    const dayProjects = projects.filter((p) => {
+    const filtered = projects.filter((p) => {
       if (!p.startDate?.seconds) return false;
-      const s = new Date(p.startDate.seconds * 1000);
-      const sDay = s.toDateString();
-      const clickedDay = start.toDateString();
-      return sDay === clickedDay;
+      return new Date(p.startDate.seconds * 1000).toDateString() === start.toDateString();
     });
-    setFilteredProjects(dayProjects);
+    setFilteredProjects(filtered);
+
+    // Add highlight class to selected cell
+    document.querySelectorAll(".rbc-selected-cell").forEach((el) => {
+      el.classList.remove("rbc-selected-cell");
+    });
+
+    const allCells = document.querySelectorAll(".rbc-day-bg");
+    allCells.forEach((cell) => {
+      if (new Date(cell.getAttribute("data-date") || "").toDateString() === start.toDateString()) {
+        cell.classList.add("rbc-selected-cell");
+      }
+    });
   };
 
+  // Show all projects again
   const handleShowAll = () => {
     setFilteredProjects(projects);
     setSelectedDate(null);
   };
 
+  if (loading) return <div className="p-4 text-white text-center">Loading upcoming projects...</div>;
+
   return (
-    <div className="max-w-7xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4 text-center">Upcoming Projects</h1>
-      <div className="md:flex gap-4">
-        <div className="md:w-2/3 h-[500px] border p-2 mb-4 md:mb-0">
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            onSelectEvent={handleSelectEvent}
-            onSelectSlot={handleSelectSlot}
-            selectable={true}
-            style={{ height: "100%" }}
-          />
+    <div className="min-h-screen bg-black text-white font-sans relative">
+      {/* ============== HERO SECTION ============== */}
+      <section className="relative flex flex-col items-center justify-center h-[70vh] pt-20">
+        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-4 tracking-wide">
+            <span className="text-gray-200">Upcoming Projects</span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
+            Explore our calendar of upcoming events and join us in making a difference!
+          </p>
         </div>
-        <div className="md:w-1/3">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-xl font-bold">
-              {selectedDate
-                ? `Projects on ${selectedDate.toDateString()}`
-                : `All Upcoming Projects`}
-            </h2>
-            <button
-              onClick={handleShowAll}
-              className="bg-green-600 text-white px-3 py-1 rounded"
-            >
+      </section>
+
+      {/* ============== MAIN CONTENT SECTION ============== */}
+      <section className="max-w-7xl mx-auto py-16 px-4">
+        <div className="md:flex gap-6">
+          {/* Calendar Panel */}
+          <div className="md:w-2/3 bg-neutral-900 border border-neutral-800 p-4 rounded shadow mb-8 md:mb-0">
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: 500 }}
+              onSelectSlot={handleSelectSlot}
+              selectable
+              className="text-white bg-neutral-500"
+            />
+          </div>
+
+          {/* Projects List Panel */}
+          <div className="md:w-1/3 space-y-4">
+            <AnimatePresence>
+              {selectedDate && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className=" text-white px-4 py-2 rounded-lg text-center"
+                >
+                  <h2 className="text-xl font-bold">
+                    Projects on {selectedDate.toDateString()}
+                  </h2>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <button onClick={handleShowAll} className="bg-white text-black px-3 py-1 rounded">
               Show All
             </button>
-          </div>
-          {filteredProjects.length === 0 ? (
-            <p>No upcoming projects found.</p>
-          ) : (
-            <div className="space-y-4">
+
+            <AnimatePresence>
               {filteredProjects.map((proj) => (
-                <div key={proj.id} className="bg-white shadow p-4">
-                  <h3 className="text-lg font-semibold">{proj.title}</h3>
-                  <p className="text-sm text-gray-600">
-                    {proj.location} |{" "}
-                    {proj.startDate?.seconds
-                      ? new Date(proj.startDate.seconds * 1000).toDateString()
-                      : ""}
-                  </p>
-                  <p className="text-gray-700">{proj.description}</p>
-                  <Link href={`/projects/${proj.id}`} className="text-blue-600 underline text-sm">
-                    View Details
-                  </Link>
-                </div>
+                <motion.div
+                  key={proj.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-neutral-900 rounded shadow p-4 border border-neutral-800"
+                >
+                  <h3 className="text-lg font-semibold text-white">{proj.title}</h3>
+                  <p className="mt-2 text-gray-300">{proj.description}</p>
+                </motion.div>
               ))}
-            </div>
-          )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
