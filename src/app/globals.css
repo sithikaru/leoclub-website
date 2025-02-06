@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 0, 0, 0;
+  
+  /* Calendar theme colors */
+  --calendar-primary: 147, 51, 234;
+  --calendar-secondary: 59, 130, 246;
+  --calendar-accent: 236, 72, 153;
+  --calendar-success: 34, 197, 94;
+  --calendar-warning: 234, 179, 8;
+}
+
 /* globals.css */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -62,3 +74,105 @@
     background-color: rgba(0, 255, 150, 0.6);
   }
 }
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom selection color */
+::selection {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+
+/* Calendar Styling */
+.upcoming-calendar {
+  @apply font-light;
+}
+
+.upcoming-calendar .rbc-header {
+  @apply py-4 font-medium text-white border-white/10 bg-white/5;
+}
+
+.upcoming-calendar .rbc-month-view {
+  @apply border-white/10 rounded-lg overflow-hidden;
+}
+
+.upcoming-calendar .rbc-day-bg {
+  @apply transition-all duration-300;
+}
+
+.upcoming-calendar .rbc-off-range-bg {
+  @apply bg-white/5;
+}
+
+.upcoming-calendar .rbc-today {
+  @apply bg-purple-600/20 backdrop-blur-sm;
+}
+
+.upcoming-calendar .rbc-event {
+  @apply bg-gradient-to-r from-purple-600 to-blue-600 border-none rounded-md px-2 py-1 
+         text-white font-medium shadow-lg transform transition-transform hover:scale-105;
+}
+
+.upcoming-calendar .rbc-selected-cell {
+  @apply bg-purple-600/30 backdrop-blur-sm;
+}
+
+.upcoming-calendar .rbc-date-cell {
+  @apply text-white/80 p-2 text-right;
+}
+
+.upcoming-calendar .rbc-button-link {
+  @apply text-white/80 hover:text-white transition-colors;
+}
+
+.upcoming-calendar .rbc-show-more {
+  @apply text-purple-400 hover:text-purple-300 transition-colors;
+}
+
+.upcoming-calendar .rbc-current {
+  @apply text-purple-400 font-medium;
+}
+
+/* Project Cards Grid */
+.projects-grid {
+  @apply grid grid-cols-1 gap-6 mt-8;
+}
+
+/* Project Card Animation */
+.project-card {
+  @apply transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl;
+}
+
+/* Calendar Event Colors */
+.event-type-1 { background: linear-gradient(135deg, rgb(var(--calendar-primary)), rgb(var(--calendar-secondary))); }
+.event-type-2 { background: linear-gradient(135deg, rgb(var(--calendar-secondary)), rgb(var(--calendar-accent))); }
+.event-type-3 { background: linear-gradient(135deg, rgb(var(--calendar-accent)), rgb(var(--calendar-success))); }
+.event-type-4 { background: linear-gradient(135deg, rgb(var(--calendar-success)), rgb(var(--calendar-warning))); }

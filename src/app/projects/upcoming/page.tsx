@@ -1,15 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // Import animation
+import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, dateFnsLocalizer, Event } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { getProjectsByStatus } from "@/app/lib/firestore";
+import Link from "next/link";
+import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
+import Image from "next/image";
 
-// Localization setup
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
@@ -28,7 +31,14 @@ export default function UpcomingProjectsPage() {
     })();
   }, []);
 
-  // Convert projects to Calendar Events
+  const eventClassGetter = (event: Event) => {
+    const eventTypes = ['event-type-1', 'event-type-2', 'event-type-3', 'event-type-4'];
+    const randomType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+    return {
+      className: randomType
+    };
+  };
+
   const events: Event[] = projects.map((p) => ({
     title: p.title,
     start: p.startDate?.seconds ? new Date(p.startDate.seconds * 1000) : new Date(),
@@ -37,7 +47,6 @@ export default function UpcomingProjectsPage() {
     resource: p.id,
   }));
 
-  // Handle Date Selection (Add Animation)
   const handleSelectSlot = ({ start }: { start: Date }) => {
     setSelectedDate(start);
     const filtered = projects.filter((p) => {
@@ -45,97 +54,146 @@ export default function UpcomingProjectsPage() {
       return new Date(p.startDate.seconds * 1000).toDateString() === start.toDateString();
     });
     setFilteredProjects(filtered);
-
-    // Add highlight class to selected cell
-    document.querySelectorAll(".rbc-selected-cell").forEach((el) => {
-      el.classList.remove("rbc-selected-cell");
-    });
-
-    const allCells = document.querySelectorAll(".rbc-day-bg");
-    allCells.forEach((cell) => {
-      if (new Date(cell.getAttribute("data-date") || "").toDateString() === start.toDateString()) {
-        cell.classList.add("rbc-selected-cell");
-      }
-    });
   };
 
-  // Show all projects again
   const handleShowAll = () => {
     setFilteredProjects(projects);
     setSelectedDate(null);
   };
 
-  if (loading) return <div className="p-4 text-white text-center">Loading upcoming projects...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white/60 text-lg font-light">Loading upcoming projects...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans relative">
-      {/* ============== HERO SECTION ============== */}
-      <section className="relative flex flex-col items-center justify-center h-[70vh] pt-20">
-        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-4 tracking-wide">
-            <span className="text-gray-200">Upcoming Projects</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-            Explore our calendar of upcoming events and join us in making a difference!
-          </p>
+    <div className="min-h-screen bg-black text-white">
+      
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl md:text-5xl font-light mb-6"
+          >
+            Upcoming Projects
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-lg text-white/60 font-light"
+          >
+            Explore our calendar of upcoming events and join us in making a difference
+          </motion.p>
         </div>
       </section>
 
-      {/* ============== MAIN CONTENT SECTION ============== */}
-      <section className="max-w-7xl mx-auto py-16 px-4">
-        <div className="md:flex gap-6">
-          {/* Calendar Panel */}
-          <div className="md:w-2/3 bg-neutral-900 border border-neutral-800 p-4 rounded shadow mb-8 md:mb-0">
-            <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              style={{ height: 500 }}
-              onSelectSlot={handleSelectSlot}
-              selectable
-              className="text-white bg-neutral-500"
-            />
-          </div>
+      {/* Main Content */}
+      <section className="py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Calendar Panel */}
+            <div className="lg:col-span-2">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-lg">
+                <Calendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  style={{ height: 600 }}
+                  onSelectSlot={handleSelectSlot}
+                  eventPropGetter={eventClassGetter}
+                  selectable
+                  className="upcoming-calendar"
+                />
+              </div>
+            </div>
 
-          {/* Projects List Panel */}
-          <div className="md:w-1/3 space-y-4">
-            <AnimatePresence>
-              {selectedDate && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className=" text-white px-4 py-2 rounded-lg text-center"
-                >
-                  <h2 className="text-xl font-bold">
-                    Projects on {selectedDate.toDateString()}
-                  </h2>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Projects Panel */}
+            <div>
+              <div className="sticky top-24">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5 text-purple-400" />
+                    <h2 className="text-xl font-light">
+                      {selectedDate 
+                        ? format(selectedDate, 'MMMM d, yyyy')
+                        : 'All Upcoming Projects'
+                      }
+                    </h2>
+                  </div>
+                  {selectedDate && (
+                    <button 
+                      onClick={handleShowAll}
+                      className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                      Show All
+                    </button>
+                  )}
+                </div>
 
-            <button onClick={handleShowAll} className="bg-white text-black px-3 py-1 rounded">
-              Show All
-            </button>
-
-            <AnimatePresence>
-              {filteredProjects.map((proj) => (
-                <motion.div
-                  key={proj.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-neutral-900 rounded shadow p-4 border border-neutral-800"
-                >
-                  <h3 className="text-lg font-semibold text-white">{proj.title}</h3>
-                  <p className="mt-2 text-gray-300">{proj.description}</p>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-4">
+                  <AnimatePresence mode="popLayout">
+                    {(filteredProjects.length === 0 && selectedDate) ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="text-white/60 text-center py-8"
+                      >
+                        No projects scheduled for this date
+                      </motion.div>
+                    ) : (
+                      filteredProjects.map((project) => (
+                        <motion.div
+                          key={project.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          className="project-card group relative overflow-hidden rounded-lg aspect-[3/2]"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black z-10" />
+                          {project.images && project.images[0] ? (
+                            <Image
+                              src={project.images[0]}
+                              alt={project.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20" />
+                          )}
+                          <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
+                            <h3 className="text-xl font-light mb-2">{project.title}</h3>
+                            <p className="text-white/60 text-sm line-clamp-2 mb-4">
+                              {project.description}
+                            </p>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-purple-300">
+                                {format(new Date(project.startDate.seconds * 1000), 'MMM d, yyyy')}
+                              </span>
+                              <Link
+                                href={`/projects/${project.id}`}
+                                className="text-white/80 hover:text-white transition-colors"
+                              >
+                                Learn More
+                              </Link>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

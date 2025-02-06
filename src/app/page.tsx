@@ -15,24 +15,32 @@ export default function HomePage() {
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
   const [pastProjects, setPastProjects] = useState<any[]>([]);
   const [boardPreview, setBoardPreview] = useState<any[]>([]);
-
-  // States for the overlay menu
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     fetchData();
+    
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   async function fetchData() {
     try {
-      const statsData = await getStats(); // Ensure your Firestore data includes 'completedProjects' & 'plannedProjects'
+      const statsData = await getStats();
       const upcoming = await getProjectsByStatus("upcoming");
       const past = await getProjectsByStatus("past");
       const board = await getAllBoardMembers();
-
+  
+      console.log("Upcoming projects:", upcoming);
+      console.log("Past projects:", past);
+  
       setStats(statsData);
-      setUpcomingProjects(upcoming.slice(0, 3));
-      setPastProjects(past.slice(0, 3));
+      setUpcomingProjects(upcoming.slice(0, 1));
+      setPastProjects(past.slice(0, 2));
       setBoardPreview(board.slice(0, 4));
     } catch (err) {
       console.error(err);
@@ -42,298 +50,236 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-black text-white font-sans relative">
       
+{/* Hero Section */}
+<section className="relative min-h-screen flex items-center justify-center">
+  <div className="absolute inset-0 bg-[url('/bg.jpeg')] bg-cover bg-center bg-fixed opacity-70" />
+  <div className="absolute inset-0 bg-gradient-to-b from-black via-black/60 to-black" />
+  
+  <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
+    <h1 className="text-5xl md:text-7xl font-light mb-8 leading-tight">
+      Empowering Youth Through
+      <span className="block mt-2 font-normal">Service & Leadership</span>
+    </h1>
+    <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-12 font-light leading-relaxed">
+      We believe in the power of young minds to create meaningful change in our communities.
+    </p>
+    <Link
+      href="#mission"
+      className="inline-block border border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-4 text-lg hover:bg-white/10 transition-colors rounded-full"
+    >
+      Discover More
+    </Link>
+  </div>
+</section>
 
-      {/* FULL-PAGE OVERLAY MENU */}
-      <nav
-        className={`fixed inset-0 z-60 bg-black bg-opacity-95 p-8 transform transition-transform duration-300 ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <button
-          onClick={() => setMenuOpen(false)}
-          className="text-white text-2xl absolute top-8 right-8 focus:outline-none"
-        >
-          &times;
-        </button>
-        <div className="mt-16 flex flex-col items-center space-y-8 text-xl font-semibold">
-          <Link href="/" onClick={() => setMenuOpen(false)}>
-            Home
-          </Link>
-          <Link href="/projects/upcoming" onClick={() => setMenuOpen(false)}>
-            Upcoming Projects
-          </Link>
-          <Link href="/projects/past" onClick={() => setMenuOpen(false)}>
-            Past Projects
-          </Link>
-          <Link href="/board" onClick={() => setMenuOpen(false)}>
-            Our Board
-          </Link>
-          <Link href="/contact" onClick={() => setMenuOpen(false)}>
-            Contact Us
-          </Link>
+{/* Impact Stats */}
+<section className="py-32 px-4 bg-white/5">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-4xl font-light text-center mb-16">Our Impact</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+              <svg
+                className="w-16 h-16 mx-auto mb-6 text-white/80"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+              <CounterCard endValue={stats.completedProjects || 0} label="Projects Completed" />
+            </div>
+            <div>
+                <svg
+                className="w-16 h-16 mx-auto mb-6 text-white/80"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+                </svg>
+            <CounterCard endValue={256} label="Active Members" />
+            </div>
+          </div>
         </div>
-      </nav>
+      </section>
 
-      {/* HERO SECTION */}
-      <section className="relative flex flex-col items-center justify-center h-[90vh] pt-20">
-        {/* Large Hero Background Image or Gradient */}
-        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-
-        {/* Hero Content */}
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-4 tracking-wide">
-            Empowering Youth.<br className="hidden md:block" />
-            <span className="text-gray-200">Inspiring Change.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-8">
-            Together we serve, together we grow, and together we lead our communities
-            towards a brighter future.
+      {/* Mission Section */}
+      <section id="mission" className="py-32 px-4">
+        <div className="max-w-5xl mx-auto text-center  border border-white/10 p-40 rounded-lg">
+          <h2 className="text-4xl font-light mb-12">Our Mission</h2>
+          <p className="text-xl text-gray-300 leading-relaxed font-light">
+            We are dedicated to fostering leadership and service among youth, creating positive change
+            through collaborative initiatives that address community needs. Our approach combines
+            innovative thinking with practical action, ensuring lasting impact in everything we do.
           </p>
-          <Link
-            href="#mission"
-            className="inline-block bg-white text-black font-semibold px-6 py-3 hover:bg-gray-300 transition-all rounded-md"
-          >
-            Learn More
-          </Link>
         </div>
       </section>
 
-      {/* MISSION SECTION */}
-      <section
-        id="mission"
-        className="max-w-6xl mx-auto py-20 px-4 text-center border-b border-neutral-800"
-      >
-        <h2 className="text-4xl font-bold mb-6 tracking-wider uppercase">Our Mission</h2>
-        <p className="text-gray-300 text-lg leading-relaxed max-w-3xl mx-auto">
-          We are dedicated to empowering youth to lead impactful change in our communities
-          through collaboration, leadership, and service. Our club aims to foster responsible
-          citizens and leaders who strive to make a positive difference in every step they
-          take.
-        </p>
-      </section>
+      
 
-      {/* STATISTICS SECTION (Animated Counters) */}
-      <section
-        id="impact"
-        className="max-w-6xl mx-auto py-20 px-4 border-b border-neutral-800 text-center"
-      >
-        <h2 className="text-4xl font-bold mb-8 tracking-wider uppercase">Our Impact</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <CounterCard
-            endValue={stats.completedProjects || 0}
-            label="Projects Completed"
-          />
-          <CounterCard
-            endValue={stats.plannedProjects || 0}
-            label="Projects Planned"
-          />
-        </div>
-      </section>
-
-      {/* UPCOMING PROJECTS */}
-      <ProjectsSection
-        title="Upcoming Projects"
-        projects={upcomingProjects}
-        link="/projects/upcoming"
-      />
-
-      {/* PAST PROJECTS */}
-      <ProjectsSection
-        title="Past Projects"
-        projects={pastProjects}
-        link="/projects/past"
-      />
-
-      {/* MEET OUR BOARD */}
-      <BoardSection members={boardPreview} />
-
-      {/* CONTACT US SECTION */}
-      <section id="contact" className="max-w-6xl mx-auto py-20 px-4 border-t border-neutral-800">
-        <h2 className="text-4xl font-bold text-center mb-8 tracking-wider uppercase">
-          Contact Us
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="relative overflow-hidden rounded-lg bg-neutral-800 shadow-lg">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31686.658329217243!2d79.84997434862616!3d6.8795309827192295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae25bc8a3c64b17%3A0x6471b91e2d1235e0!2sGP%20Square%2C%20Bambalapitiya!5e0!3m2!1sen!2slk!4v1639181376576!5m2!1sen!2slk"
-              className="w-full h-[320px] md:h-full"
-              allowFullScreen
-              loading="lazy"
-            ></iframe>
-          </div>
-
-          <form
-            className="flex flex-col space-y-4 bg-neutral-900 p-8 rounded-lg shadow-lg"
-            onSubmit={(e) => {
-              e.preventDefault();
-              // Handle Firebase email sending logic
-            }}
-          >
-            <h3 className="text-xl font-semibold mb-2">Drop Us a Message</h3>
-            <input
-              type="text"
-              placeholder="Your Name"
-              className="border border-neutral-700 rounded-md p-3 bg-black text-white placeholder-gray-400 focus:border-gray-500 focus:outline-none"
-              required
-            />
-            <input
-              type="email"
-              placeholder="Your Email"
-              className="border border-neutral-700 rounded-md p-3 bg-black text-white placeholder-gray-400 focus:border-gray-500 focus:outline-none"
-              required
-            />
-            <textarea
-              placeholder="Your Message"
-              className="border border-neutral-700 rounded-md p-3 bg-black text-white placeholder-gray-400 focus:border-gray-500 focus:outline-none"
-              rows={4}
-              required
-            ></textarea>
-            <button
-              type="submit"
-              className="bg-white text-black py-3 rounded-md font-semibold hover:bg-gray-200 transition"
-            >
-              Send Message
-            </button>
-          </form>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="py-8 border-t border-neutral-800 bg-black text-center text-gray-400">
-        <p className="text-sm">
-          &copy; {new Date().getFullYear()} Leo Club of IIT. All rights reserved.
-        </p>
-      </footer>
+      {/* Projects Preview */}
+      <section className="py-32 px-4">
+  <div className="max-w-6xl mx-auto">
+    <h2 className="text-4xl font-light text-center mb-16">Featured Projects</h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {pastProjects.map((project: any) => (
+        <ProjectCard key={project.id} {...project} />
+      ))}
+      {upcomingProjects.map((project: any) => (
+        <ProjectCard key={project.id} {...project} />
+      ))}
     </div>
-  );
-}
+  </div>
+</section>
 
-/* ====================================================== */
-/* ========== SUB COMPONENTS ============================ */
-/* ====================================================== */
-
-/**
- * ProjectsSection
- * Displays a title, a list of projects, and a link to more.
- */
-function ProjectsSection({ title, projects, link }: any) {
-  return (
-    <section className="max-w-6xl mx-auto py-20 px-4 border-b border-neutral-800">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold tracking-wider">{title}</h2>
-        <Link href={link} className="text-gray-300 hover:text-gray-100 transition underline">
-          View All
-        </Link>
-      </div>
-
-      {projects.length === 0 ? (
-        <p className="text-gray-500">No projects found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {projects.map((project: any) => (
-            <ProjectCard key={project.id} {...project} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-/**
- * ProjectCard
- * Displays a single project's image, title, and summary.
- */
-function ProjectCard({ id, title, description, images }: any) {
-  return (
-    <div className="bg-neutral-900 rounded-lg shadow-lg p-6 hover:shadow-xl transition flex flex-col">
-      <div className="relative w-full h-48 mb-4 overflow-hidden rounded-md bg-black">
-        {images && images[0] ? (
-          <Image
-            src={images[0]}
-            alt={title}
-            fill
-            className="object-cover hover:scale-105 transition-transform"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full w-full text-gray-500">
-            No Image
-          </div>
-        )}
-      </div>
-      <h3 className="text-lg font-bold mb-2 text-gray-100">{title}</h3>
-      <p className="text-gray-400 text-sm line-clamp-3 flex-grow">{description}</p>
+      {/* Board Preview */}
+      <section className="py-32 px-4 bg-white/5">
+  <div className="max-w-6xl mx-auto">
+    <h2 className="text-4xl font-light text-center mb-16">Our Leadership</h2>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      {boardPreview.map((member: any) => (
+        <BoardCard key={member.id} {...member} />
+      ))}
+    </div>
+    <div className="text-center mt-8">
       <Link
-        href={`/projects/${id}`}
-        className="mt-4 inline-block text-sm text-white underline hover:text-gray-200"
+        href="/board"
+        className="inline-block border border-white/20 bg-white/5 text-white px-8 py-4 text-lg hover:bg-white/10 transition-colors rounded-full"
       >
-        Read More
+        View All Members
       </Link>
     </div>
-  );
-}
+  </div>
+</section>
 
-/**
- * BoardSection
- * Displays a grid of board members.
- */
-function BoardSection({ members }: any) {
-  return (
-    <section className="max-w-6xl mx-auto py-20 px-4 border-b border-neutral-800">
-      <h2 className="text-4xl font-bold text-center mb-8 tracking-wider uppercase">
-        Meet Our Board
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {members.map((member: any) => (
-          <BoardCard key={member.id} {...member} />
-        ))}
-      </div>
-    </section>
-  );
-}
+      {/* Contact Section */}
+      <section className="py-32 px-4">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-4xl font-light text-center mb-16">Get in Touch</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="h-[400px] rounded-lg overflow-hidden border border-white/5">
+              <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.9606310673216!2d79.85310937566368!3d6.895312593103874!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae25bdee494e9d3%3A0x629c2df0a6d82f99!2sIIT%20School%20Of%20Computing!5e0!3m2!1sen!2slk!4v1738821128972!5m2!1sen!2slk"
+              className="w-full h-full"
+              style={{ border: "none" }}
+              allowFullScreen
+              loading="lazy"
+              />
+            </div>
+            <form
+              className="space-y-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Your Name"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/20"
+                required
+              />
+              <input
+                type="email"
+                placeholder="Your Email"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/20"
+                required
+              />
+              <textarea
+                placeholder="Your Message"
+                rows={4}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white placeholder:text-gray-400 focus:outline-none focus:border-white/20"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full border border-white/20 bg-white/5 text-white px-8 py-4 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
 
-/**
- * BoardCard
- * Displays a single board member's name, position, and photo.
- */
-function BoardCard({ name, position, photoUrl }: any) {
-  return (
-    <div className="bg-neutral-900 rounded-lg shadow-lg p-6 flex flex-col items-center text-center">
-      <div className="relative w-20 h-20 mb-4 overflow-hidden rounded-full bg-black">
-        {photoUrl ? (
-          <Image
-            src={photoUrl}
-            alt={name}
-            fill
-            className="object-cover hover:scale-105 transition-transform"
-          />
-        ) : (
-          <Image
-            src="/default-user.png"
-            alt={name}
-            fill
-            className="object-cover hover:scale-105 transition-transform"
-          />
-        )}
-      </div>
-      <h4 className="font-semibold text-white">{name}</h4>
-      <p className="text-sm text-gray-400">{position}</p>
     </div>
   );
 }
 
-/**
- * CounterCard
- * Simple animated counter from 0 to `endValue`.
- */
+// Sub-components remain mostly the same but with updated styling
+function ProjectCard({ id, title, description, images }: any) {
+  return (
+    <div className="group relative overflow-hidden rounded-lg aspect-[3/4]">
+      <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors z-10" />
+      {images && images[0] ? (
+        <Image
+          src={images[0]}
+          alt={title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-white/5" />
+      )}
+      <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
+        <h3 className="text-xl font-light mb-2">{title}</h3>
+        <p className="text-sm text-gray-300 line-clamp-3">{description}</p>
+        <Link
+          href={`/projects/${id}`}
+          className="mt-4 inline-block text-sm border-b border-white/20 hover:border-white transition-colors pb-1"
+        >
+          More Details.
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function BoardCard({ name, position, photoUrl }: any) {
+  return (
+    <div className="group relative overflow-hidden rounded-lg aspect-[3/4]">
+      <div className="absolute inset-0 transition-colors z-10" />
+      {photoUrl ? (
+        <Image
+          src={photoUrl}
+          alt={name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      ) : (
+        <Image
+          src="/default-user.png"
+          alt={name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      )}
+      <div className="absolute inset-0 p-6 flex flex-col justify-end z-20">
+        <h4 className="text-xl font-light mb-2">{name}</h4>
+        <p className="text-sm text-gray-300 line-clamp-3">{position}</p>
+      </div>
+    </div>
+  );
+}
+
 function CounterCard({ endValue, label }: { endValue: number; label: string }) {
   const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
     let current = 0;
-    const increment = Math.ceil(endValue / 10); 
-    // 50 steps in this example. Adjust as desired.
-
+    const increment = Math.ceil(endValue / 50);
     const timer = setInterval(() => {
       current += increment;
       if (current >= endValue) {
@@ -342,15 +288,15 @@ function CounterCard({ endValue, label }: { endValue: number; label: string }) {
       } else {
         setCount(current);
       }
-    }, 300); // 30ms interval for smoother animation
+    }, 40);
 
     return () => clearInterval(timer);
   }, [endValue]);
 
   return (
-    <div className="bg-neutral-900 rounded-lg p-8 shadow-lg flex flex-col items-center justify-center">
-      <h3 className="text-6xl font-extrabold text-white mb-2">{count}</h3>
-      <p className="text-gray-400 text-lg uppercase tracking-wider">{label}</p>
+    <div className="text-center">
+      <h3 className="text-6xl font-light mb-4">{count}</h3>
+      <p className="text-gray-400 text-lg font-light">{label}</p>
     </div>
   );
 }
