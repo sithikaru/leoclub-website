@@ -57,7 +57,7 @@ export async function updateProject(
   if (!snapshot.exists()) throw new Error("Project not found.");
 
   // 1. If new files are provided, upload them and append to the existing images
-  let existingData = snapshot.data();
+  const existingData = snapshot.data();
   const existingImages = existingData.images || [];
   const newImageUrls: string[] = [];
 
