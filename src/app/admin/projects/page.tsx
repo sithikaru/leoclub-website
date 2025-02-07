@@ -87,7 +87,7 @@ export default function AdminProjectsPage() {
   }
 
   return (
-    <div className="p-4 text-white">
+    <div className="p-4 bg-white">
       <h1 className="text-2xl font-bold mb-4">Manage Projects</h1>
 
       {/* FILTER BY STATUS */}
@@ -95,7 +95,7 @@ export default function AdminProjectsPage() {
         <label htmlFor="statusFilter">Filter by Status: </label>
         <select
           id="statusFilter"
-          className="border p-1 text-black"
+          className="border p-1"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >

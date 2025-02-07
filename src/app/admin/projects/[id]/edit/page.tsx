@@ -93,7 +93,7 @@ export default function EditProjectPage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-white">
       <h1 className="text-2xl font-bold mb-4">Edit Project</h1>
       <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col">

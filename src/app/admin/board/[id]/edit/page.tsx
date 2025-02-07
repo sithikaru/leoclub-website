@@ -56,7 +56,7 @@ export default function EditBoardMemberPage() {
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-white">
       <h1 className="text-2xl font-bold mb-4">Edit Board Member</h1>
       <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col">
