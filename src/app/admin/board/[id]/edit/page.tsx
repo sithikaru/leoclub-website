@@ -24,18 +24,17 @@ export default function EditBoardMemberPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
+    const fetchMember = async () => {
+      const member = (await getBoardMemberById(memberId)) as { id: string; name: string; position: string };
+      if (!member) {
+        setError("Member not found.");
+        return;
+      }
+      setName(member.name);
+      setPosition(member.position);
+    };
     fetchMember();
-  }, []);
-
-  async function fetchMember() {
-    const member = await getBoardMemberById(memberId);
-    if (!member) {
-      setError("Member not found.");
-      return;
-    }
-    setName(member.name);
-    setPosition(member.position);
-  }
+  }, [memberId]);
 
   async function handleUpdate(e: FormEvent) {
     e.preventDefault();

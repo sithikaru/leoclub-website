@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
@@ -28,35 +29,39 @@ export default function EditProjectPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
-    fetchProject();
-  }, []);
-
-  async function fetchProject() {
-    try {
-      const proj = await getProjectById(projectId);
-      if (!proj) {
-        setError("Project not found");
-        return;
+    async function fetchProject() {
+      try {
+        const proj = await getProjectById(projectId);
+        if (!proj) {
+          setError("Project not found");
+          return;
+        }
+        setTitle(proj.title || "");
+        setDescription(proj.description || "");
+        setLocation(proj.location || "");
+        if (proj.startDate?.seconds) {
+          const sd = new Date(proj.startDate.seconds * 1000);
+          setStartDate(sd.toISOString().split("T")[0]);
+        }
+        if (proj.endDate?.seconds) {
+          const ed = new Date(proj.endDate.seconds * 1000);
+          setEndDate(ed.toISOString().split("T")[0]);
+        }
+        if (proj.videoUrls) {
+          setVideoUrls(proj.videoUrls.join(", "));
+        }
+        setStatus(proj.status || "upcoming");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
       }
-      setTitle(proj.title || "");
-      setDescription(proj.description || "");
-      setLocation(proj.location || "");
-      if (proj.startDate?.seconds) {
-        const sd = new Date(proj.startDate.seconds * 1000);
-        setStartDate(sd.toISOString().split("T")[0]);
-      }
-      if (proj.endDate?.seconds) {
-        const ed = new Date(proj.endDate.seconds * 1000);
-        setEndDate(ed.toISOString().split("T")[0]);
-      }
-      if (proj.videoUrls) {
-        setVideoUrls(proj.videoUrls.join(", "));
-      }
-      setStatus(proj.status || "upcoming");
-    } catch (err: any) {
-      setError(err.message);
     }
-  }
+
+    fetchProject();
+  }, [projectId]);
 
   async function handleUpdate(e: FormEvent) {
     e.preventDefault();

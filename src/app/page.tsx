@@ -15,7 +15,7 @@ export default function HomePage() {
   const [upcomingProjects, setUpcomingProjects] = useState<any[]>([]);
   const [pastProjects, setPastProjects] = useState<any[]>([]);
   const [boardPreview, setBoardPreview] = useState<any[]>([]);
-  const [scrolled, setScrolled] = useState(false);
+  const [,setScrolled] = useState(false);
 
   useEffect(() => {
     fetchData();

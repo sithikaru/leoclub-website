@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/app/lib/firebase";
@@ -35,18 +35,18 @@ export default function AdminProjectsPage() {
     if (!user) router.push("/admin/login");
   }, [loading, user, router]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, [statusFilter]);
-
-  async function fetchProjects() {
+  const fetchProjects = useCallback(async () => {
     try {
       const data = await getProjectsByStatus(statusFilter || undefined);
       setProjects(data);
     } catch (err) {
       console.error(err);
     }
-  }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
