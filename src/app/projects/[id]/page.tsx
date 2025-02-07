@@ -9,16 +9,17 @@ import Image from "next/image";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
+  const projectId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!params?.id) return;
+    if (!projectId) return;
 
     const fetchProject = async () => {
       try {
-        const data = await getProjectById(params.id);
+        const data = await getProjectById(projectId);
         if (!data) {
           // If no project found, show a "not found" state
           setProject(null);
@@ -34,7 +35,7 @@ export default function ProjectDetailsPage() {
     };
 
     fetchProject();
-  }, [params]);
+  }, [projectId]);
 
   if (loading) {
     return (
