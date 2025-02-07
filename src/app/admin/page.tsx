@@ -17,9 +17,9 @@ export default function AdminHomePage() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      <div className="space-x-4">
+    <div className="p-4 text-white">
+      <h1 className="text-2xl font-bold mb-4 text-white">Admin Dashboard</h1>
+      <div className="space-x-4 text-white">
         <Link
           href="/admin/projects"
           className="inline-block bg-green-600 text-white px-4 py-2 rounded"

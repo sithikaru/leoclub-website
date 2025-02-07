@@ -54,7 +54,7 @@ export default function AdminBoardPage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 text-white">
       <h1 className="text-2xl font-bold mb-4">Manage Board Members</h1>
 
       {/* LIST */}
@@ -65,7 +65,7 @@ export default function AdminBoardPage() {
             <div key={m.id} className="border p-2 flex items-center justify-between">
               <div>
                 <p className="font-bold">{m.name}</p>
-                <p className="text-sm text-gray-600">{m.position}</p>
+                <p className="text-sm text-gray-400">{m.position}</p>
               </div>
               <div className="space-x-2">
                 <button
