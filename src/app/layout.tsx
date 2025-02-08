@@ -16,6 +16,16 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        />
+        <title>Leo Club of IIT</title>
+        <link rel="icon" href="/logo.png?v=1" 
+        />
+      </head>
       <body className="font-sans bg-black text-gray-800">
         {/* HEADER */}
         <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-sm bg-black/70 border-b border-neutral-800">

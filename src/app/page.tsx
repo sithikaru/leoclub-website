@@ -73,51 +73,68 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Impact Stats */}
-      <section className="py-32 px-4 bg-white/5">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl font-light text-center mb-16">Our Impact</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <svg
-                className="w-16 h-16 mx-auto mb-6 text-white/80"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-              <CounterCard
-                endValue={stats.completedProjects || 0}
-                label="Projects Completed"
-              />
-            </div>
-            <div>
-              <svg
-                className="w-16 h-16 mx-auto mb-6 text-white/80"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-              <CounterCard endValue={256} label="Active Members" />
-            </div>
-          </div>
-        </div>
-      </section>
+     {/* Impact Stats */}
+<section className="py-32 px-4 bg-white/5">
+  <div className="max-w-5xl mx-auto">
+    <h2 className="text-4xl font-light text-center mb-16">Our Impact</h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <div>
+        <svg
+          className="w-16 h-16 mx-auto mb-6 text-white/80"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
+        </svg>
+        <CounterCard
+          endValue={stats.completedProjects || 0}
+          label="Projects Completed"
+        />
+      </div>
+      <div>
+        <svg
+          className="w-16 h-16 mx-auto mb-6 text-white/80"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+        <CounterCard endValue={256} label="Active Members" />
+      </div>
+      <div>
+        <svg
+          className="w-16 h-16 mx-auto mb-6 text-white/80"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <CounterCard endValue={upcomingProjects.length || 0} label="Upcoming Projects" />
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Mission Section */}
       <section id="mission" className="py-16 md:py-24 px-4">
@@ -143,13 +160,14 @@ export default function HomePage() {
           <h2 className="text-4xl font-light text-center mb-16">
             Featured Projects
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {pastProjects.map((project: any) => (
               <ProjectCard key={project.id} {...project} />
             ))}
             {upcomingProjects.map((project: any) => (
               <ProjectCard key={project.id} {...project} />
             ))}
+            
           </div>
         </div>
       </section>
