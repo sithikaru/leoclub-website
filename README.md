@@ -1,8 +1,4 @@
-Understood! Here's a tailored **README.md** file designed to highlight your technical skills, showcase the project's complexity, and position you as a highly capable undergraduate developer ready for professional opportunities.
-
----
-
-# 🌟 LEO Club of IIT Website 🌟
+# 🌟 LEO Club of IIT Website 🌟 [leoiit.org](https://www.leoiit.org/)
 
 Welcome to the **LEO Club of IIT** website repository, a comprehensive, modern web platform built from scratch by an ambitious undergraduate developer! This project is a testament to innovative problem-solving, dynamic content management, and clean, responsive design. It serves as the digital hub for the LEO Club of IIT, providing a user-friendly interface for members and administrators alike.
 
