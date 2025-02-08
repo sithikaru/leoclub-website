@@ -65,10 +65,10 @@ export default function HomePage() {
             in our communities.
           </p>
           <Link
-            href="#mission"
+            href="https://forms.gle/wRw6KXsh9E8tPVb18"
             className="inline-block border border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-4 text-lg hover:bg-white/10 transition-colors rounded-full"
           >
-            Discover More
+            Join IIT Leos
           </Link>
         </div>
       </section>

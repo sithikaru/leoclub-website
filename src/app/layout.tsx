@@ -99,7 +99,7 @@ export default function RootLayout({
             &copy; {new Date().getFullYear()} Leo Club of IIT. All rights
             reserved.
           </p>
-          <p><span className="text-sm">Developed by</span> Sithija Karunasena</p>
+          <p><span className="text-sm">Developed by</span> <Link className="" href="https://www.linkedin.com/in/sithija-lakshan-karunasena/">Sithija Karunasena</Link></p>
         </footer>
       </body>
     </html>
