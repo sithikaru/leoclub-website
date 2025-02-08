@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { getAllBoardMembers, BoardMember } from "@/app/lib/firestore";
+import { getAllBoardMembers } from "@/app/lib/firestore";
+import { BoardMember } from "@/app/types/BoardMember";
 
 export default function BoardPage() {
   const [members, setMembers] = useState<BoardMember[]>([]);
@@ -10,7 +11,7 @@ export default function BoardPage() {
 
   useEffect(() => {
     (async () => {
-      const data = await getAllBoardMembers();
+      const data: BoardMember[] = await getAllBoardMembers();
       // Sort members by priority in ascending order
       const sortedMembers = data.sort((a: BoardMember, b: BoardMember) => a.priority - b.priority);
       setMembers(sortedMembers);

@@ -173,9 +173,17 @@ export async function getBoardMemberById(id: string) {
 }
 
 // List all board members
-export async function getAllBoardMembers() {
+import { BoardMember } from "@/app/types/BoardMember";
+
+export async function getAllBoardMembers(): Promise<BoardMember[]> {
   const snapshot = await getDocs(collection(db, "boardMembers"));
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    name: doc.data().name,
+    position: doc.data().position,
+    photoUrl: doc.data().photoUrl,
+    priority: doc.data().priority,
+  }));
 }
 
 // ========== FILE UPLOAD UTILITY ==========

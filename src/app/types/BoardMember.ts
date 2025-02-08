@@ -4,6 +4,6 @@ export interface BoardMember {
   id: string;
   name: string;
   position: string;
-  photoUrls: string[]; // each member can have multiple images
-  createdAt?: any;
+  photoUrl?: string;
+  priority: number; // Add this line
 }
