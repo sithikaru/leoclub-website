@@ -57,7 +57,7 @@ export default function ProjectDetailsPage() {
 
   // Parallax setup
   const { scrollYProgress } = useScroll();
-  const parallaxY = useTransform(scrollYProgress, [0, 1], [0, 400]);
+  const parallaxY = useTransform(scrollYProgress, [0, 1], [0, 300]);
   const headerY = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   if (loading) {
