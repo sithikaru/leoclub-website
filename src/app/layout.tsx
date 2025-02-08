@@ -60,44 +60,48 @@ export default function RootLayout({
         {menuOpen && (
           <nav className="md:hidden fixed top-[64px] left-0 right-0 bg-black/90 border-t border-neutral-800 z-40">
             <ul className="flex flex-col space-y-4 p-6 text-white text-lg">
-              <li>
-                <Link
-                  href="/"
-                  onClick={() => setMenuOpen(false)}
-                  className="hover:text-gray-300 transition-colors"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/projects/upcoming"
-                  onClick={() => setMenuOpen(false)}
-                  className="hover:text-gray-300 transition-colors"
-                >
-                  Upcoming Projects
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/projects/past"
-                  onClick={() => setMenuOpen(false)}
-                  className="hover:text-gray-300 transition-colors"
-                >
-                  Past Projects
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/board"
-                  onClick={() => setMenuOpen(false)}
-                  className="hover:text-gray-300 transition-colors"
-                >
-                  Our Board
-                </Link>
-              </li>
-            </ul>
-          </nav>
+            <li className="w-full">
+              <Link
+                href="/"
+                onClick={() => setMenuOpen(false)}
+                className="hover:text-gray-300 transition-colors block w-full h-full"
+              >
+                Home
+              </Link>
+              <hr className="w-full border-gray-500"/>
+            </li>
+            <li className="w-full">
+              <Link
+                href="/projects/upcoming"
+                onClick={() => setMenuOpen(false)}
+                className="hover:text-gray-300 transition-colors block w-full h-full"
+              >
+                Upcoming Projects
+              </Link>
+              <hr className="w-full border-gray-500"/>
+            </li>
+            <li className="w-full">
+              <Link
+                href="/projects/past"
+                onClick={() => setMenuOpen(false)}
+                className="hover:text-gray-300 transition-colors block w-full h-full"
+              >
+                Past Projects
+              </Link>
+              <hr className="w-full border-gray-500"/>
+            </li>
+            <li className="w-full">
+              <Link
+                href="/board"
+                onClick={() => setMenuOpen(false)}
+                className="hover:text-gray-300 transition-colors block w-full h-full"
+              >
+                Our Board
+              </Link>
+              <hr className="w-full border-gray-500"/>
+            </li>
+          </ul>
+        </nav>
         )}
 
         {/* MAIN CONTENT */}
