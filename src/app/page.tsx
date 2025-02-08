@@ -130,7 +130,7 @@ export default function HomePage() {
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <CounterCard endValue={upcomingProjects.length || 0} label="Upcoming Projects" />
+        <CounterCard endValue={stats.plannedProjects.length || 0} label="Upcoming Projects" />
       </div>
     </div>
   </div>
