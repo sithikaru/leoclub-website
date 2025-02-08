@@ -1,19 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
-
+"use client"
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { getAllBoardMembers } from "@/app/lib/firestore";
+import { getAllBoardMembers, BoardMember } from "@/app/lib/firestore";
 
 export default function BoardPage() {
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<BoardMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const data = await getAllBoardMembers();
-      setMembers(data);
+      // Sort members by priority in ascending order
+      const sortedMembers = data.sort((a: BoardMember, b: BoardMember) => a.priority - b.priority);
+      setMembers(sortedMembers);
       setLoading(false);
     })();
   }, []);

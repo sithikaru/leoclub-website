@@ -124,6 +124,7 @@ export async function createBoardMember(data: any, file?: File): Promise<string>
   const docRef = await addDoc(collection(db, "boardMembers"), {
     name: data.name,
     position: data.position,
+    priority: data.priority,
     photoUrl,
     createdAt: Timestamp.now(),
   });
@@ -151,6 +152,7 @@ export async function updateBoardMember(
   await updateDoc(docRef, {
     name: data.name,
     position: data.position,
+    priority: data.priority,
     photoUrl: updatedPhoto,
     updatedAt: Timestamp.now(),
   });

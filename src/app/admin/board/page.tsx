@@ -18,6 +18,7 @@ export default function AdminBoardPage() {
   const [members, setMembers] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
+  const [priority, setPriority] = useState<number>(1);
   const [photoFile, setPhotoFile] = useState<FileList | null>(null);
 
   useEffect(() => {
@@ -40,9 +41,10 @@ export default function AdminBoardPage() {
       return;
     }
     const file = photoFile[0];
-    await createBoardMember({ name, position }, file);
+    await createBoardMember({ name, position, priority }, file);
     setName("");
     setPosition("");
+    setPriority(1);
     setPhotoFile(null);
     fetchMembers();
   }
@@ -107,6 +109,16 @@ export default function AdminBoardPage() {
               className="border p-2"
               value={position}
               onChange={(e) => setPosition(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="font-semibold">Priority (1 is highest)</label>
+            <input
+              type="number"
+              className="border p-2"
+              value={priority}
+              onChange={(e) => setPriority(Number(e.target.value))}
               required
             />
           </div>

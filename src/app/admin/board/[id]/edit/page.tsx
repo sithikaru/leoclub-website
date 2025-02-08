@@ -16,6 +16,7 @@ export default function EditBoardMemberPage() {
 
   const [name, setName] = useState("");
   const [position, setPosition] = useState("");
+  const [priority, setPriority] = useState<number>(1);
   const [photoFile, setPhotoFile] = useState<FileList | null>(null);
   const [error, setError] = useState("");
 
@@ -25,13 +26,14 @@ export default function EditBoardMemberPage() {
 
   useEffect(() => {
     const fetchMember = async () => {
-      const member = (await getBoardMemberById(memberId)) as { id: string; name: string; position: string };
+      const member = (await getBoardMemberById(memberId)) as { id: string; name: string; position: string; priority: number };
       if (!member) {
         setError("Member not found.");
         return;
       }
       setName(member.name);
       setPosition(member.position);
+      setPriority(member.priority);
     };
     fetchMember();
   }, [memberId]);
@@ -40,7 +42,7 @@ export default function EditBoardMemberPage() {
     e.preventDefault();
     try {
       const file = photoFile ? photoFile[0] : undefined;
-      await updateBoardMember(memberId, { name, position }, file);
+      await updateBoardMember(memberId, { name, position, priority }, file);
       router.push("/admin/board");
     } catch (err: any) {
       setError(err.message);
@@ -73,6 +75,15 @@ export default function EditBoardMemberPage() {
             className="border p-2"
             value={position}
             onChange={(e) => setPosition(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="font-semibold">Priority (1 is highest)</label>
+          <input
+            type="number"
+            className="border p-2"
+            value={priority}
+            onChange={(e) => setPriority(Number(e.target.value))}
           />
         </div>
         <div className="flex flex-col md:col-span-2">

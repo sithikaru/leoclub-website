@@ -9,6 +9,7 @@ import {
   getAllBoardMembers,
   getStats,
 } from "@/app/lib/firestore";
+import { BoardMember } from "./types/BoardMember";
 
 export default function HomePage() {
   const [stats, setStats] = useState<any>({});
@@ -41,7 +42,7 @@ export default function HomePage() {
       setStats(statsData);
       setUpcomingProjects(upcoming.slice(0, 1));
       setPastProjects(past.slice(0, 2));
-      setBoardPreview(board.slice(0, 4));
+      setBoardPreview((board as BoardMember[]).sort((a, b) => a.priority - b.priority).slice(0, 4));
     } catch (err) {
       console.error(err);
     }
