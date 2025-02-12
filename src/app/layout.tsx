@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
-
 export default function RootLayout({
   children,
 }: {
@@ -23,8 +22,7 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1.0"
         />
         <title>Leo Club of IIT</title>
-        <link rel="icon" href="/logo.png?v=1" 
-        />
+        <link rel="icon" href="/logo.png" type="image/png" />
       </head>
       <body className="font-sans bg-black text-gray-800">
         {/* HEADER */}
