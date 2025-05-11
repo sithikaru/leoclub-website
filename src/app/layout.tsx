@@ -49,7 +49,7 @@ export default function RootLayout({
           <nav className="hidden md:flex space-x-12 text-white items-center">
             <Link href="/">Home</Link>
             <Link href="/projects/upcoming">Upcoming Projects</Link>
-            <Link href="/projects/past">Past Projects</Link>
+            <Link href="/projects/past">Our Projects</Link>
             <Link href="/board">Our Board</Link>
           </nav>
         </header>
@@ -84,7 +84,7 @@ export default function RootLayout({
                 onClick={() => setMenuOpen(false)}
                 className="hover:text-gray-300 transition-colors block w-full h-full"
               >
-                Past Projects
+                Our Projects
               </Link>
               <hr className="w-full border-gray-500"/>
             </li>
